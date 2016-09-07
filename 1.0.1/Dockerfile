@@ -49,7 +49,7 @@ RUN apt-get update -q --fix-missing \
  && mkdir -p /tmp \
  && mkdir -p /usr/share/java/ \
  && wget http://search.maven.org/remotecontent?filepath=com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar -O protobuf.jar \
- && mv protobuf.jar /usr/share/java/
+ && mv protobuf.jar /usr/share/java/ \
  && git clone git://git.apache.org/mesos.git /mesos \
  && cd /mesos && git checkout tags/${MESOS_RELEASE_VERSION} \
  && git log -n 1 \
@@ -57,7 +57,7 @@ RUN apt-get update -q --fix-missing \
  && mkdir build \
  && cd build \
  && ../configure --disable-java --disable-python --disable-optimize --without-included-zookeeper --with-glog=/usr/local --with-protobuf=/usr --with-boost=/usr/local \
- && make -j 2 install
+ && make -j 2 install \
  && apt-get install -qy libgtest-dev --no-install-recommends \
  && cd /usr/src/gtest \
  && cmake CMakeLists.txt \

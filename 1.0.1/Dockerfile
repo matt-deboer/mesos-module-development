@@ -62,7 +62,7 @@ RUN apt-get update -q --fix-missing \
  && cd /usr/src/gtest \
  && cmake CMakeLists.txt \
  && make \
- && cp *.a /usr/local/lib/
+ && cp *.a /usr/local/lib/ \
  && printf '#!/bin/sh\n\
 rm -rf build && \\\n\
 mkdir -p build && \\\n\

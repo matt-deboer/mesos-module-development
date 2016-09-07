@@ -63,6 +63,8 @@ RUN apt-get update -q --fix-missing \
  && cmake CMakeLists.txt \
  && make \
  && cp *.a /usr/local/lib/ \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
  && printf '#!/bin/sh\n\
 rm -rf build && \\\n\
 mkdir -p build && \\\n\

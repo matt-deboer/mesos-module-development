@@ -3,10 +3,10 @@ MAINTAINER Matt DeBoer <matt.deboer@gmail.com>
 
 ENV MESOS_RELEASE_VERSION=1.0.1
 
-RUN apt-get update -q --fix-missing
-RUN apt-get -qy install software-properties-common
-RUN apt-get update -qy
-RUN apt-get -qy install                   \
+RUN apt-get update -q --fix-missing \
+ && apt-get -qy install software-properties-common \
+ && apt-get update -qy \
+ && apt-get -qy install                   \
   linux-libc-dev                          \
   build-essential                         \
   autoconf                                \
@@ -31,58 +31,39 @@ RUN apt-get -qy install                   \
   heimdal-clients                         \
   libsasl2-modules-gssapi-heimdal         \
   unzip                                   \
-  --no-install-recommends
-
-# Install protobuf 2.6.1
-RUN wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz \
+  --no-install-recommends \
+ && wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz \
  && tar -xvzf protobuf-2.6.1.tar.gz \
  && cd protobuf-2.6.1/ \
  && ./configure --prefix=/usr \
- && make && make install
-
-# Install the picojson headers
-RUN wget https://raw.githubusercontent.com/kazuho/picojson/v1.3.0/picojson.h -O /usr/local/include/picojson.h
-
-# Install CMake 3.6.1
-RUN wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz \
+ && make && make install \
+ && wget https://raw.githubusercontent.com/kazuho/picojson/v1.3.0/picojson.h -O /usr/local/include/picojson.h \
+ && wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz \
  && tar -xvzf cmake-3.6.1.tar.gz \
  && cd cmake-3.6.1/ \
  && ./configure \
  && make && make install \
  && update-alternatives --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force \
- && cmake --version
-
-RUN mkdir -p /mesos
-RUN mkdir -p /tmp
-RUN mkdir -p /usr/share/java/
-RUN wget http://search.maven.org/remotecontent?filepath=com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar -O protobuf.jar
-RUN mv protobuf.jar /usr/share/java/
-
-WORKDIR /mesos
-
-# Clone and build Mesos
-RUN git clone git://git.apache.org/mesos.git /mesos
-RUN git checkout tags/${MESOS_RELEASE_VERSION}
-RUN git log -n 1
-
-# Bootstrap
-RUN ./bootstrap
-
-# Configure
-RUN mkdir build && cd build && ../configure --disable-java --disable-python --disable-optimize --without-included-zookeeper --with-glog=/usr/local --with-protobuf=/usr --with-boost=/usr/local
-
-# Build Mesos
-RUN cd build && make -j 2 install
-
-# Install GTest
-RUN apt-get install -qy libgtest-dev --no-install-recommends \
+ && cmake --version \
+ && mkdir -p /mesos \
+ && mkdir -p /tmp \
+ && mkdir -p /usr/share/java/ \
+ && wget http://search.maven.org/remotecontent?filepath=com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar -O protobuf.jar \
+ && mv protobuf.jar /usr/share/java/
+ && git clone git://git.apache.org/mesos.git /mesos \
+ && cd /mesos && git checkout tags/${MESOS_RELEASE_VERSION} \
+ && git log -n 1 \
+ && ./bootstrap \
+ && mkdir build \
+ && cd build \
+ && ../configure --disable-java --disable-python --disable-optimize --without-included-zookeeper --with-glog=/usr/local --with-protobuf=/usr --with-boost=/usr/local \
+ && make -j 2 install
+ && apt-get install -qy libgtest-dev --no-install-recommends \
  && cd /usr/src/gtest \
  && cmake CMakeLists.txt \
  && make \
  && cp *.a /usr/local/lib/
-
-# Create build launch script
-RUN printf '#!/bin/sh\n\
+ && printf '#!/bin/sh\n\
 rm -rf build && \\\n\
 mkdir -p build && \\\n\
 cd build && \\\n\

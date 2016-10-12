@@ -1,7 +1,10 @@
 FROM ubuntu:14.04
 MAINTAINER Matt DeBoer <matt.deboer@gmail.com>
 
-ENV MESOS_RELEASE_VERSION=1.0.1
+ENV MESOS_RELEASE_VERSION=1.0.1 \
+    PROTOBUF_VERSION=2.6.1 \
+    BUILD_DIR="./build" \
+    CMAKE_ARGS=""
 
 RUN apt-get update -q --fix-missing \
  && apt-get -qy install software-properties-common \
@@ -32,17 +35,21 @@ RUN apt-get update -q --fix-missing \
   libsasl2-modules-gssapi-heimdal         \
   unzip                                   \
   --no-install-recommends \
- && wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz \
- && tar -xvzf protobuf-2.6.1.tar.gz \
- && cd protobuf-2.6.1/ \
+ && wget https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-${PROTOBUF_VERSION}.tar.gz \
+ && tar -xvzf protobuf-${PROTOBUF_VERSION}.tar.gz \
+ && cd protobuf-${PROTOBUF_VERSION}/ \
  && ./configure --prefix=/usr \
  && make && make install \
+ && rm -rf /protobuf-${PROTOBUF_VERSION} \
+ && rm -f protobuf-${PROTOBUF_VERSION}.tar.gz \
  && wget https://raw.githubusercontent.com/kazuho/picojson/v1.3.0/picojson.h -O /usr/local/include/picojson.h \
  && wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz \
  && tar -xvzf cmake-3.6.1.tar.gz \
  && cd cmake-3.6.1/ \
  && ./configure \
  && make && make install \
+ && rm -rf /cmake-3.6.1 \
+ && rm -f /cmake-3.6.1.tar.gz \
  && update-alternatives --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force \
  && cmake --version \
  && mkdir -p /mesos \
@@ -58,7 +65,7 @@ RUN apt-get update -q --fix-missing \
  && cd build \
  && ../configure --disable-java --disable-python --disable-optimize --without-included-zookeeper --with-glog=/usr/local --with-protobuf=/usr --with-boost=/usr/local \
  && make -j 2 install \
- && apt-get install -qy libgtest-dev --no-install-recommends \
+ && apt-get install -qy google-mock --no-install-recommends \
  && cd /usr/src/gtest \
  && cmake CMakeLists.txt \
  && make \
@@ -66,10 +73,10 @@ RUN apt-get update -q --fix-missing \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
  && printf '#!/bin/sh\n\
-rm -rf build && \\\n\
-mkdir -p build && \\\n\
-cd build && \\\n\
-cmake .. && \\\n\
+rm -rf ${BUILD_DIR} && \\\n\
+mkdir -p ${BUILD_DIR} && \\\n\
+cd ${BUILD_DIR} && \\\n\
+cmake -DMESOS_VERSION:STRING=${MESOS_RELEASE_VERSION} ${CMAKE_ARGS} .. && \\\n\
 make\n'\
   >> /bin/build \
  && chmod +x /bin/build

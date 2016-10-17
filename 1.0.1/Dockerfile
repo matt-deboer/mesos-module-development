@@ -41,15 +41,14 @@ RUN apt-get update -q --fix-missing \
  && ./configure --prefix=/usr \
  && make && make install \
  && rm -rf /protobuf-${PROTOBUF_VERSION} \
- && rm -f protobuf-${PROTOBUF_VERSION}.tar.gz \
+ && rm -f /protobuf-${PROTOBUF_VERSION}.tar.gz \
  && wget https://raw.githubusercontent.com/kazuho/picojson/v1.3.0/picojson.h -O /usr/local/include/picojson.h \
- && wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz \
+ && wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz -O /cmake-3.6.1.tar.gz \
+ && cd / \
  && tar -xvzf cmake-3.6.1.tar.gz \
- && cd cmake-3.6.1/ \
+ && cd /cmake-3.6.1 \
  && ./configure \
  && make && make install \
- && rm -rf /cmake-3.6.1 \
- && rm -f /cmake-3.6.1.tar.gz \
  && update-alternatives --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force \
  && cmake --version \
  && mkdir -p /mesos \
@@ -65,19 +64,19 @@ RUN apt-get update -q --fix-missing \
  && cd build \
  && ../configure --disable-java --disable-python --disable-optimize --without-included-zookeeper --with-glog=/usr/local --with-protobuf=/usr --with-boost=/usr/local \
  && make -j 2 install \
- && apt-get install -qy google-mock --no-install-recommends \
+ && apt-get install -qy libgtest-dev \
  && cd /usr/src/gtest \
  && cmake CMakeLists.txt \
  && make \
  && cp *.a /usr/local/lib/ \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
- && printf '#!/bin/sh\n\
-rm -rf ${BUILD_DIR} && \\\n\
-mkdir -p ${BUILD_DIR} && \\\n\
-cd ${BUILD_DIR} && \\\n\
-cmake -DMESOS_VERSION:STRING=${MESOS_RELEASE_VERSION} ${CMAKE_ARGS} .. && \\\n\
-make\n'\
+ && printf "#!/bin/sh\n\
+rm -rf \${BUILD_DIR} && \n\
+mkdir -p \${BUILD_DIR} && \n\
+cd ${BUILD_DIR} && \n\
+cmake -DMESOS_VERSION:STRING=${MESOS_RELEASE_VERSION} \${CMAKE_ARGS} .. && \n\
+make\n"\
   >> /bin/build \
  && chmod +x /bin/build
 

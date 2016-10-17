@@ -1,9 +1,10 @@
 FROM ubuntu:14.04
 MAINTAINER Matt DeBoer <matt.deboer@gmail.com>
 
-ENV MESOS_RELEASE_VERSION=0.28.2 \
-    PROTOBUF_VERSION=2.5.0 \
-    BUILD_DIR="./build" \
+ARG MESOS_RELEASE_VERSION
+ARG PROTOBUF_VERSION
+
+ENV BUILD_DIR="./build" \
     CMAKE_ARGS=""
 
 RUN apt-get update -q --fix-missing \
@@ -43,13 +44,12 @@ RUN apt-get update -q --fix-missing \
  && rm -rf /protobuf-${PROTOBUF_VERSION} \
  && rm -f /protobuf-${PROTOBUF_VERSION}.tar.gz \
  && wget https://raw.githubusercontent.com/kazuho/picojson/v1.3.0/picojson.h -O /usr/local/include/picojson.h \
- && wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz \
+ && wget http://www.cmake.org/files/v3.6/cmake-3.6.1.tar.gz -O /cmake-3.6.1.tar.gz \
+ && cd / \
  && tar -xvzf cmake-3.6.1.tar.gz \
- && cd cmake-3.6.1/ \
+ && cd /cmake-3.6.1 \
  && ./configure \
  && make && make install \
- && rm -rf /cmake-3.6.1 \
- && rm -f /cmake-3.6.1.tar.gz \
  && update-alternatives --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force \
  && cmake --version \
  && mkdir -p /mesos \

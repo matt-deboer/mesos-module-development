@@ -55,9 +55,8 @@ RUN apt-get update -q --fix-missing \
  && mkdir -p /tmp \
  && mkdir -p /usr/share/java/ \
  && wget http://search.maven.org/remotecontent?filepath=com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar -O protobuf.jar \
- && mv protobuf.jar /usr/share/java/ 
-
-RUN git clone git://git.apache.org/mesos.git /mesos \
+ && mv protobuf.jar /usr/share/java/ \
+ && git clone git://git.apache.org/mesos.git /mesos \
  && cd /mesos && git checkout tags/${MESOS_RELEASE_VERSION} \
  && git log -n 1 \
  && ./bootstrap \
